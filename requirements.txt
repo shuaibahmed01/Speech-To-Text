@@ -1,0 +1,11 @@
+streamlit
+openai-whisper
+reportlab
+pydub
+langchain
+langchain_chroma
+langchain-text-splitters
+langchain_community
+python-dotenv
+openai
+datetimes
