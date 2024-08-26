@@ -9,9 +9,8 @@ from langchain_text_splitters import CharacterTextSplitter
 from dotenv import load_dotenv
 import os
 from tempfile import NamedTemporaryFile
-import pickle
 from datetime import datetime
-from langchain.chat_models import ChatOpenAI
+from langchain_openai import ChatOpenAI
 from langchain.chains import ConversationalRetrievalChain
 from langchain.prompts import PromptTemplate
 
@@ -121,8 +120,6 @@ def chat_with_bot():
         response = get_bot_response(user_input)
         st.session_state.chat_history.append(("You", user_input))
         st.session_state.chat_history.append(("Bot", response))
-        # Clear the input box after sending
-        st.session_state.user_input = ""
 
     # Handle clear chat button
     if clear_chat:
@@ -208,7 +205,7 @@ def search_transcript(query):
         return []
     
     # Perform the search
-    results = vectorstore.similarity_search(query)
+    results = vectorstore.similarity_search(query, k = 1)
     return [result for result in results]
 
 if __name__ == "__main__":

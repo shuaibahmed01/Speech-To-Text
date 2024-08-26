@@ -5,7 +5,8 @@ pydub
 langchain
 langchain_chroma
 langchain-text-splitters
-langchain_community
+langchain-community
 python-dotenv
 openai
 datetime
+langchain_openai
