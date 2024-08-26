@@ -65,6 +65,8 @@ def transcribe_page():
             global vectorstore
             if vectorstore is None:
                 vectorstore = build_vectorstore(transcript)
+            else:
+                add_to_vectorstore(transcript)
             
             st.subheader("Search in Transcript")
             query = st.text_input("Enter your search query:")
@@ -90,7 +92,14 @@ def transcribe_history_page():
                 st.write(transcript['transcript'])
                 pdf = create_pdf(transcript['transcript'])
                 st.download_button("Download PDF", pdf, file_name=f"transcript_{transcript['timestamp']}.pdf", mime="application/pdf")
-                
+
+# Add this new function
+def add_to_vectorstore(text):
+    global vectorstore
+    text_splitter = CharacterTextSplitter(chunk_size=500, chunk_overlap=50)
+    chunks = text_splitter.split_text(text)
+    vectorstore.add_texts(chunks)
+    
 def transcribe_audio(audio_bytes):
     # Save the audio bytes to a temporary file
     with NamedTemporaryFile(delete=False, suffix=".wav") as temp_audio_file:
