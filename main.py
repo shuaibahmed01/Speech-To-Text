@@ -14,39 +14,10 @@ from datetime import datetime
 from langchain.chat_models import ChatOpenAI
 from langchain.chains import ConversationalRetrievalChain
 from langchain.prompts import PromptTemplate
-import json
+
 load_dotenv()
 
-UPLOAD_FOLDER = "uploads"
-TRANSCRIPT_FILE = "transcripts.json"
-VECTORSTORE_FILE = "vectorstore.pkl"
 
-# Ensure the upload folder exists
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
-# Load transcripts from file
-def load_transcripts():
-    if os.path.exists(TRANSCRIPT_FILE):
-        with open(TRANSCRIPT_FILE, 'r') as f:
-            return json.load(f)
-    return []
-
-# Save transcripts to file
-def save_transcripts(transcripts):
-    with open(TRANSCRIPT_FILE, 'w') as f:
-        json.dump(transcripts, f)
-
-# Load vectorstore from file
-def load_vectorstore():
-    if os.path.exists(VECTORSTORE_FILE):
-        with open(VECTORSTORE_FILE, 'rb') as f:
-            return pickle.load(f)
-    return None
-
-# Save vectorstore to file
-def save_vectorstore(vectorstore):
-    with open(VECTORSTORE_FILE, 'wb') as f:
-        pickle.dump(vectorstore, f)
 
 # Load Whisper model
 model = whisper.load_model("base")  # or use "small", "medium", "large" depending on your needs
@@ -82,11 +53,6 @@ def transcribe_page():
     uploaded_file = st.file_uploader("Choose an audio file", type=["mp3", "wav", "m4a"])
 
     if uploaded_file is not None:
-        # Save the uploaded file
-        file_path = os.path.join(UPLOAD_FOLDER, uploaded_file.name)
-        with open(file_path, "wb") as f:
-            f.write(uploaded_file.getbuffer())
-
         audio_bytes = uploaded_file.read()
 
         # Transcribe audio
@@ -106,12 +72,6 @@ def transcribe_page():
         else:
             add_to_vectorstore(transcript)
         
-
-        # Save transcripts after adding new one
-        save_transcripts(st.session_state.transcripts)
-
-        # Save vectorstore after updating
-        save_vectorstore(st.session_state.vectorstore)
 
         # Download PDF button
         if st.button("Download Transcript as PDF"):
@@ -141,20 +101,20 @@ def chat_with_bot():
     if 'chat_history' not in st.session_state:
         st.session_state.chat_history = []
 
-    # Create two columns with adjusted ratios
-    col1, col2 = st.sidebar.columns([4, 1])
+    # Create two columns for input and button
+    col1, col2 = st.sidebar.columns([2, 1])
 
     # Place user input in the first (wider) column
     with col1:
         user_input = st.text_input(
-            label="",
+            label="",  
             key="user_input",
             placeholder="Type your message here..."
         )
 
     # Place clear chat button in the second (narrower) column
     with col2:
-        clear_chat = st.button("Clear", key="clear_chat")
+        clear_chat = st.button("Clear Chat")
 
     # Handle user input
     if user_input:
@@ -205,7 +165,6 @@ def get_bot_response(query):
 
 # Add this new function
 def add_to_vectorstore(text):
-    save_vectorstore(st.session_state.vectorstore)
     text_splitter = CharacterTextSplitter(chunk_size=500, chunk_overlap=50)
     chunks = text_splitter.split_text(text)
     st.session_state.vectorstore.add_texts(chunks)
